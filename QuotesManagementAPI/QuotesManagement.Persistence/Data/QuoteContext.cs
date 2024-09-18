@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
+using QuotesManagement.Domain.Entity;
 
 namespace QuotesManagement.Persistence.Data
 {
-    public class QuoteContext
+    public class QuoteContext : DbContext
     {
+        public QuoteContext(DbContextOptions<QuoteContext> options) : base(options) { }
+
+        public DbSet<Quote> Quotes { get; set; }
     }
 }

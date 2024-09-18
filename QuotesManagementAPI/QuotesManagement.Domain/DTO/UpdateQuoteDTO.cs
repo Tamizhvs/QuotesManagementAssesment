@@ -2,8 +2,10 @@
 
 namespace QuotesManagement.Domain.DTO
 {
-    public class CreateQuoteDTO
+    public class UpdateQuoteDTO
     {
+        [Required]
+        public int Id { get; set; }
         [Required]
         public String Author { get; set; }
         [Required]

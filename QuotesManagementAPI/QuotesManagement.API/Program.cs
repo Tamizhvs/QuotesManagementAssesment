@@ -1,8 +1,29 @@
+using Microsoft.EntityFrameworkCore;
+using QuotesManagement.Domain.Repositories;
+using QuotesManagement.Domain.Services;
+using QuotesManagement.Persistence.Data;
+using QuotesManagement.Persistence.Repositories;
+using QuotesManagement.Persistence.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>{builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();});
+});
+
+// Add DB services to the container.
+builder.Services.AddDbContext<QuoteContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IQuoteRepository, QuoteRepository>();
+builder.Services.AddScoped<IQuoteService, QuoteService>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
