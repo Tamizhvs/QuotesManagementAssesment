@@ -38,6 +38,11 @@
                     </MudItem>
                 </MudGrid>
 
+                @if (showTagError)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Error">At least one tag is required.</MudText>
+                }
+
                 <MudChipSet Class="mt-2" Clickable="false" T="string">
                     @foreach (var tag in addedTags)
                     {
@@ -66,6 +71,7 @@
     private List<string> addedTags = new();
     private bool authorTouched = false;
     private bool quoteTouched = false;
+    private bool showTagError = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -91,6 +97,7 @@
         {
             addedTags.Add(tagInput.Trim());
             tagInput = string.Empty;
+            showTagError = false;
         }
     }
 
@@ -102,7 +109,11 @@
     private async Task UpdateQuote()
     {
         await form.Validate();
-        if (form.IsValid)
+        if (addedTags.Count == 0)
+        {
+            showTagError = true;
+        }
+        if (form.IsValid && addedTags.Count > 0)
         {
             quoteToEdit.Tags = new List<string>(addedTags);
             await QuotesApiService.UpdateQuote(quoteToEdit);

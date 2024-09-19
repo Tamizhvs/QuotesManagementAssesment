@@ -8,7 +8,6 @@
 <MudPaper Class="pa-4" Elevation="4">
     <MudText Typo="Typo.h4" GutterBottom>Add Quote</MudText>
     <MudDivider />
-
     <MudForm @ref="form">
         <MudGrid>
             <MudItem xs="12" md="8">
@@ -38,6 +37,10 @@
                     </MudItem>
                 </MudGrid>
 
+                @if (showTagError)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Error">At least one tag is required.</MudText>
+                }
                 <MudChipSet Class="mt-2" Clickable="false" T="string">
                     @foreach (var tag in addedTags)
                     {
@@ -46,7 +49,6 @@
                 </MudChipSet>
             </MudItem>
         </MudGrid>
-
         <MudGrid Class="mt-4">
             <MudItem xs="12" md="4">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddNewQuote">Add Quote</MudButton>
@@ -59,10 +61,10 @@
             <MudGrid Class="mt-4">
                 <MudItem xs="12" md="8">
                     <MudText Typo="Typo.h6">Quotes to be Added:</MudText>
-                    <ul>
-                        @foreach (var quote in quotesList)
-                        {
-                            <li>
+                    @foreach (var quote in quotesList)
+                    {
+                        <MudCard Class="mb-2" Style="position: relative;">
+                            <MudCardContent>
                                 <MudText><strong>Author:</strong> @quote.Author</MudText>
                                     <MudText><strong>Quote:</strong> @quote.Quote</MudText>
                                     <MudText>
@@ -74,12 +76,14 @@
                                         }
                                     </MudChipSet>
                                 </MudText>
-                            </li>
-                        }
-                    </ul>
+                            </MudCardContent>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveQuote(quote)"
+                                           Style="position: absolute; top: 8px; right: 8px;" />
+                        </MudCard>
+
+                    }
                 </MudItem>
             </MudGrid>
-
             <MudGrid Class="mt-3">
                 <MudItem xs="12" md="4">
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveQuotes">Save All</MudButton>
@@ -96,17 +100,17 @@
     private List<string> addedTags = new List<string>();
     private bool authorTouched = false;
     private bool quoteTouched = false;
+    private bool showTagError = false;
     MudForm form;
-
     private void AddTag()
     {
         if (!string.IsNullOrWhiteSpace(tagInput))
         {
             addedTags.Add(tagInput.Trim());
             tagInput = string.Empty;
+            showTagError = false;
         }
     }
-
     private void RemoveTag(string tag)
     {
         addedTags.Remove(tag);
@@ -114,10 +118,13 @@
 
     private async void AddNewQuote()
     {
-        // Validate the form before adding the quote
         await form.Validate();
-
-        if (form.IsValid)
+        if (addedTags.Count == 0)
+        {
+            showTagError = true;
+        }
+        tagInput = string.Empty;
+        if (form.IsValid && addedTags.Count > 0)
         {
             if (!string.IsNullOrWhiteSpace(newQuote.Author) && !string.IsNullOrWhiteSpace(newQuote.Quote))
             {
@@ -125,10 +132,16 @@
                 quotesList.Add(newQuote);
                 newQuote = new CreateQuoteDTO();
                 addedTags.Clear();
-                authorTouched = false; // Reset touched status after successful add
+                authorTouched = false;
                 quoteTouched = false;
+                showTagError = false;
             }
         }
+    }
+
+    private void RemoveQuote(CreateQuoteDTO quote)
+    {
+        quotesList.Remove(quote);
     }
 
     protected async void SaveQuotes()

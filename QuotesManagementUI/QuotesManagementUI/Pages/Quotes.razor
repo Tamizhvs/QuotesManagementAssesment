@@ -4,9 +4,12 @@
 @inject IQuotesApiService QuotesApiService
 
 <MudContainer Class="mt-4">
-    <MudText Typo="Typo.h4" GutterBottom="true">Quote Info</MudText>
+    <div class="d-flex justify-content-between w-100">
+        <MudText Typo="Typo.h4" GutterBottom="true">Quotes Info</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" Class="float-right mb-2" Href="AddQuote">Add Quote</MudButton>
+    </div>
 
-    <MudGrid Class="mb-3">
+    <MudGrid class="mb-3">
         <MudItem xs="12" md="4">
             <MudTextField Label="Search by Author" @bind-Value="searchAuthor" Variant="Variant.Outlined" FullWidth="true" />
         </MudItem>
@@ -20,15 +23,10 @@
 
     <MudGrid>
         <MudItem>
-            <div class="d-flex justify-content-between">
-                <div>
+                <div class="mb-4">
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchQuotes">Search</MudButton>
                     <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="ResetSearch" Class="ml-2">Reset</MudButton>
                 </div>
-                <div>
-                <MudButton Variant="Variant.Filled" Color="Color.Success" Class="ml-2" Href="AddQuote">Add Quote</MudButton>
-                </div>
-            </div>
         </MudItem>
     </MudGrid>
 
@@ -38,7 +36,7 @@
     }
     else
     {
-        <MudTable Items="quotes" Hover="true">
+        <MudTable Items="quotes" Hover="true" Striped="true" Bordered="true" Paginated="true" PageSize="5">
             <HeaderContent>
                 <MudTh>Id</MudTh>
                 <MudTh>Author</MudTh>
@@ -57,17 +55,13 @@
                             <MudChip Color="Color.Primary" Size="Size.Small">@tag</MudChip>
                         }
                     </MudChipSet>
-
-
                 </MudTd>
                 <MudTd DataLabel="Action">
                     <MudButton Variant="Variant.Text" Color="Color.Info" Href="@($"EditQuote/{context.Id}")">Edit</MudButton>
                     <MudButton Variant="Variant.Text" Color="Color.Error" Href="@($"DeleteQuote/{context.Id}")">Delete</MudButton>
-
                 </MudTd>
             </RowTemplate>
         </MudTable>
-
     }
 </MudContainer>
 
