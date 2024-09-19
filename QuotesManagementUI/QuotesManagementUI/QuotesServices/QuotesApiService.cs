@@ -25,11 +25,11 @@ namespace QuotesManagementUI.QuotesServices
             }
         }
 
-        public async Task<UpdateQuoteDTO> GetQuoteById(int id)
+        public async Task<QuoteResult> GetQuoteById(int id)
         {
             try
             {
-                return await _httpClient.GetFromJsonAsync<UpdateQuoteDTO>($"/api/Quotes/{id}");
+                return await _httpClient.GetFromJsonAsync<QuoteResult>($"/api/Quotes/{id}");
             }
             catch (HttpRequestException ex)
             {

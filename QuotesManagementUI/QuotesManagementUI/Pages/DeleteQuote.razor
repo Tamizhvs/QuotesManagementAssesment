@@ -1,0 +1,62 @@
+﻿@page "/DeleteQuote/{Id}"
+@using QuotesManagementUI.ResultSet
+@using QuotesManagementUI.QuotesServices
+@inject IQuotesApiService QuotesApiService
+@inject NavigationManager NavigationManager
+
+<MudCard Class="pa-4">
+    <MudCardContent>
+        <MudText Typo="Typo.h5" GutterBottom>Delete Quote</MudText>
+
+        @if (quoteToDelete != null)
+        {
+            <MudAlert Severity="Severity.Warning">
+                <MudText Typo="Typo.body1">Are you sure you want to delete the following quote?</MudText>
+                <MudText Typo="Typo.body1"><strong>Author:</strong> @quoteToDelete.Author</MudText>
+                    <MudText Typo="Typo.body1"><strong>Quote:</strong> @quoteToDelete.Quote</MudText>
+                    <MudText Typo="Typo.body1"><strong>Tags:</strong> @string.Join(", ", quoteToDelete.Tags)</MudText>
+                </MudAlert>
+
+
+            <MudCardActions>
+                <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="DeleteQuotes">Delete</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Text" OnClick="Cancel">Cancel</MudButton>
+            </MudCardActions>
+        }
+        else
+        {
+            <MudText Typo="Typo.body1">Loading...</MudText>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private QuoteResult quoteToDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadQuoteData();
+    }
+
+    private async Task LoadQuoteData()
+    {
+        quoteToDelete = await QuotesApiService.GetQuoteById(Convert.ToInt32(Id));
+    }
+
+    private async Task DeleteQuotes()
+    {
+        if (quoteToDelete != null)
+        {
+            await QuotesApiService.DeleteQuote(quoteToDelete.Id);
+            NavigationManager.NavigateTo("");
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("");
+    }
+}

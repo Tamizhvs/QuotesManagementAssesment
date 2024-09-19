@@ -1,1 +1,103 @@
 ﻿@page "/"
+@using QuotesManagementUI.ResultSet
+@using QuotesManagementUI.QuotesServices
+@inject IQuotesApiService QuotesApiService
+
+<MudContainer Class="mt-4">
+    <MudText Typo="Typo.h4" GutterBottom="true">Quote Info</MudText>
+
+    <MudGrid Class="mb-3">
+        <MudItem xs="12" md="4">
+            <MudTextField Label="Search by Author" @bind-Value="searchAuthor" Variant="Variant.Outlined" FullWidth="true" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudTextField Label="Search by Tags (comma-separated)" @bind-Value="searchTags" Variant="Variant.Outlined" FullWidth="true" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudTextField Label="Search by Quote Content" @bind-Value="searchQuote" Variant="Variant.Outlined" FullWidth="true" />
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid>
+        <MudItem>
+            <div class="d-flex justify-content-between">
+                <div>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchQuotes">Search</MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="ResetSearch" Class="ml-2">Reset</MudButton>
+                </div>
+                <div>
+                <MudButton Variant="Variant.Filled" Color="Color.Success" Class="ml-2" Href="AddQuote">Add Quote</MudButton>
+                </div>
+            </div>
+        </MudItem>
+    </MudGrid>
+
+    @if (quotes == null)
+    {
+        <MudText Typo="Typo.body1" Class="mt-2"><em>Loading...!</em></MudText>
+    }
+    else
+    {
+        <MudTable Items="quotes" Hover="true">
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>Author</MudTh>
+                <MudTh>Quote</MudTh>
+                <MudTh>Tags</MudTh>
+                <MudTh>Action</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Id">@context.Id</MudTd>
+                    <MudTd DataLabel="Author">@context.Author</MudTd>
+                    <MudTd DataLabel="Quote">@context.Quote</MudTd>
+                    <MudTd DataLabel="Tags">
+                        <MudChipSet T="string" Class="my-chipset">
+                            @foreach (var tag in @context.Tags)
+                        {
+                            <MudChip Color="Color.Primary" Size="Size.Small">@tag</MudChip>
+                        }
+                    </MudChipSet>
+
+
+                </MudTd>
+                <MudTd DataLabel="Action">
+                    <MudButton Variant="Variant.Text" Color="Color.Info" Href="@($"EditQuote/{context.Id}")">Edit</MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Error" Href="@($"DeleteQuote/{context.Id}")">Delete</MudButton>
+
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+
+    }
+</MudContainer>
+
+@code {
+    private List<QuoteResult> quotes = new();
+    private string searchAuthor = string.Empty;
+    private string searchTags = string.Empty;
+    private string searchQuote = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAllQuotes();
+    }
+
+    private async Task LoadAllQuotes()
+    {
+        quotes = (await QuotesApiService.GetAllQuotes()).ToList();
+    }
+
+    private async Task SearchQuotes()
+    {
+        var tagList = searchTags.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToList();
+        quotes = (await QuotesApiService.SearchQuotes(searchAuthor, tagList, searchQuote)).ToList();
+    }
+
+    private async Task ResetSearch()
+    {
+        searchAuthor = string.Empty;
+        searchTags = string.Empty;
+        searchQuote = string.Empty;
+        await LoadAllQuotes();
+    }
+}

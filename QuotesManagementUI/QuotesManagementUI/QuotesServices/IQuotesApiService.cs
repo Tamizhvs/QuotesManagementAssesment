@@ -6,7 +6,7 @@ namespace QuotesManagementUI.QuotesServices
     public interface IQuotesApiService
     {
         Task<IEnumerable<QuoteResult>> GetAllQuotes();
-        Task<UpdateQuoteDTO> GetQuoteById(int id);
+        Task<QuoteResult> GetQuoteById(int id);
         Task AddQuotes(IEnumerable<CreateQuoteDTO> quote);
         Task UpdateQuote(UpdateQuoteDTO quote);
         Task DeleteQuote(int id);

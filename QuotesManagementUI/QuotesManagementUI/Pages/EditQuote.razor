@@ -1,0 +1,122 @@
+﻿@page "/EditQuote/{Id}"
+@using QuotesManagementUI.ResultSet
+@using QuotesManagementUI.DTO
+@using QuotesManagementUI.QuotesServices
+@inject IQuotesApiService QuotesApiService
+@inject NavigationManager NavigationManager
+@using MudBlazor
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h4">Edit Quote</MudText>
+    <MudDivider Class="my-2" />
+    <MudForm @ref="form" Validated="OnValidSubmit">
+        <MudGrid>
+            <MudItem xs="12" md="8">
+                <MudTextField Label="Author"
+                              @bind-Value="quoteToEdit.Author"
+                              For="@(() => quoteToEdit.Author)"
+                              Required="true"
+                              Error="!string.IsNullOrWhiteSpace(quoteToEdit.Author) ? false : authorTouched"
+                              ErrorText="Author is required."
+                              OnBlur="() => authorTouched = true" />
+
+                <MudTextField Label="Quote"
+                              @bind-Value="quoteToEdit.Quote"
+                              For="@(() => quoteToEdit.Quote)"
+                              Required="true"
+                              Error="!string.IsNullOrWhiteSpace(quoteToEdit.Quote) ? false : quoteTouched"
+                              ErrorText="Quote is required."
+                              OnBlur="() => quoteTouched = true" />
+
+                <MudText Typo="Typo.subtitle2" Class="mt-2">Tags</MudText>
+                <MudGrid>
+                    <MudItem xs="4">
+                        <MudTextField @bind-Value="tagInput" Placeholder="Enter tag" Style="max-width: 200px;" />
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddTag">Add Tag</MudButton>
+                    </MudItem>
+                </MudGrid>
+
+                <MudChipSet Class="mt-2" Clickable="false" T="string">
+                    @foreach (var tag in addedTags)
+                    {
+                        <MudChip T="string" OnClose="(() => RemoveTag(tag))" Color="Color.Primary" Size="Size.Small" Closeable="true">@tag</MudChip>
+                    }
+                </MudChipSet>
+            </MudItem>
+        </MudGrid>
+
+        <MudGrid Class="mt-3">
+            <MudItem xs="12" sm="4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdateQuote">Update Quote</MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudForm>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private MudForm form;
+    private UpdateQuoteDTO quoteToEdit = new();
+    private string tagInput;
+    private List<string> addedTags = new();
+    private bool authorTouched = false;
+    private bool quoteTouched = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadQuoteData();
+    }
+
+    private async Task LoadQuoteData()
+    {
+        var quotes = await QuotesApiService.GetQuoteById(Convert.ToInt32(Id));
+        if (quotes != null)
+        {
+            quoteToEdit.Id = quotes.Id;
+            quoteToEdit.Author = quotes.Author;
+            quoteToEdit.Quote = quotes.Quote;
+            quoteToEdit.Tags = quotes.Tags;
+            addedTags = new List<string>(quotes.Tags);
+        }
+    }
+
+    private void AddTag()
+    {
+        if (!string.IsNullOrWhiteSpace(tagInput))
+        {
+            addedTags.Add(tagInput.Trim());
+            tagInput = string.Empty;
+        }
+    }
+
+    private void RemoveTag(string tag)
+    {
+        addedTags.Remove(tag);
+    }
+
+    private async Task UpdateQuote()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            quoteToEdit.Tags = new List<string>(addedTags);
+            await QuotesApiService.UpdateQuote(quoteToEdit);
+            NavigationManager.NavigateTo("");
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("");
+    }
+
+    private async Task OnValidSubmit()
+    {
+        await UpdateQuote();
+    }
+}
