@@ -36,13 +36,13 @@
     }
     else
     {
-        <MudTable Items="quotes" Hover="true" Striped="true" Bordered="true" Paginated="true" PageSize="5">
+        <MudTable Items="quotes" AllowUnsorted="true" Hover="true" Striped="true" Bordered="true" SortLabel="Sort By">
             <HeaderContent>
-                <MudTh>Id</MudTh>
-                <MudTh>Author</MudTh>
-                <MudTh>Quote</MudTh>
-                <MudTh>Tags</MudTh>
-                <MudTh>Action</MudTh>
+                <MudTh Style="text-align:center"><MudTableSortLabel SortBy="new Func<QuoteResult, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
+                <MudTh Style="text-align:center"><MudTableSortLabel SortBy="new Func<QuoteResult, object>(x=>x.Author)">Author</MudTableSortLabel></MudTh>
+                <MudTh Style="text-align:center"><MudTableSortLabel SortBy="new Func<QuoteResult, object>(x=>x.Quote)">Quote</MudTableSortLabel></MudTh>
+                <MudTh Style="text-align:center">Tags</MudTh>
+                <MudTh Style="text-align:center">Action</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Id">@context.Id</MudTd>
@@ -61,6 +61,9 @@
                     <MudButton Variant="Variant.Text" Color="Color.Error" Href="@($"DeleteQuote/{context.Id}")">Delete</MudButton>
                 </MudTd>
             </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[] { 5, 10, 25 }" />
+            </PagerContent>
         </MudTable>
     }
 </MudContainer>
