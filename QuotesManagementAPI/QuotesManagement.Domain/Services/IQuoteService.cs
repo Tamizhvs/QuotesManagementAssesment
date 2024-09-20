@@ -1,11 +1,6 @@
 ﻿using QuotesManagement.Domain.DTO;
 using QuotesManagement.Domain.Entity;
 using QuotesManagement.Domain.ResultSet;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QuotesManagement.Domain.Services
 {

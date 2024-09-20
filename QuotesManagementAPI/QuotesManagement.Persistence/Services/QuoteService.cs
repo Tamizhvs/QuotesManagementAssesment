@@ -27,7 +27,6 @@ namespace QuotesManagement.Persistence.Services
                 Quote = t.QuoteText
             });
         }
-
         public async Task<QuoteResult> GetQuoteByIdAsync(int id)
         {
             var quote = await _quoteRepository.GetQuoteByIdAsync(id);
@@ -42,7 +41,6 @@ namespace QuotesManagement.Persistence.Services
                 Quote = quote.QuoteText
             };
         }
-
         public async Task AddQuotesAsync(IEnumerable<CreateQuoteDTO> quotes)
         {
             foreach (var quoteDto in quotes)
@@ -69,13 +67,10 @@ namespace QuotesManagement.Persistence.Services
             await ProcessTagsForQuoteAsync(existingQuote, quote.Tags);
             await _quoteRepository.UpdateQuoteAsync(existingQuote);
         }
-
-
         public async Task DeleteQuoteAsync(int id)
         {
             await _quoteRepository.DeleteQuoteAsync(id);
         }
-
         public async Task<IEnumerable<QuoteResult>> SearchQuotesAsync(string author, List<string> tags, string quoteContent)
         {
             var quotes = await _quoteRepository.SearchQuotesAsync(author, tags, quoteContent);
@@ -87,13 +82,11 @@ namespace QuotesManagement.Persistence.Services
                 Quote = t.QuoteText
             });
         }
-
         public async Task<List<string>> GetAllTagNamesAsync()
         {
             var tags = await _quoteRepository.GetAllTagNamesAsync();
             return tags;
         }
-
         private async Task ProcessTagsForQuoteAsync(Quote quote, List<string> tagNames)
         {
             var distinctTags = tagNames.Where(tag => !string.IsNullOrWhiteSpace(tag)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
@@ -114,7 +107,6 @@ namespace QuotesManagement.Persistence.Services
                 }
             }
         }
-
         public async Task<IEnumerable<Tags>> GetAllTagsAsync()
         {
             var tags = await _quoteRepository.GetAllTagsAsync();

@@ -18,54 +18,28 @@ namespace QuotesManagement.Persistence.Repositories
         {
             return await _context.Quotes.Include(q => q.QuoteTags).ThenInclude(qt => qt.Tags).ToListAsync();
         }
-
         public async Task<Quote> GetQuoteByIdAsync(int id)
         {
             return await _context.Quotes.Include(q => q.QuoteTags).ThenInclude(qt => qt.Tags).FirstOrDefaultAsync(q => q.Id == id);
         }
-
         public async Task AddQuotesAsync(Quote quote)
         {
             await _context.Quotes.AddAsync(quote);
             await _context.SaveChangesAsync();
         }
-
         public async Task UpdateQuoteAsync(Quote quote)
         {
             _context.Quotes.Update(quote);
             await _context.SaveChangesAsync();
         }
-
-        //public async Task DeleteQuoteAsync(int id)
-        //{
-        //    var quote = await _context.Quotes.FindAsync(id);
-        //    if (quote != null)
-        //    {
-        //        _context.Quotes.Remove(quote);
-        //        await _context.SaveChangesAsync();
-        //    }
-        //}
-
         public async Task DeleteQuoteAsync(int id)
         {
-            // Fetch the quote with related QuoteTags
-            var quote = await _context.Quotes
-                .Include(q => q.QuoteTags)
-                .ThenInclude(qt => qt.Tags)
-                .FirstOrDefaultAsync(q => q.Id == id);
-
+            var quote = await _context.Quotes.Include(q => q.QuoteTags).ThenInclude(qt => qt.Tags).FirstOrDefaultAsync(q => q.Id == id);
             if (quote != null)
             {
-                // Remove associated entries in QuoteTags
                 _context.QuotesTags.RemoveRange(quote.QuoteTags);
-
-                // Remove the quote itself
                 _context.Quotes.Remove(quote);
-
-                // Save changes to delete quote and QuoteTags
                 await _context.SaveChangesAsync();
-
-                // Optionally: Clean up unused tags after the quote and QuoteTags are deleted
                 await CleanupUnusedTagsAsync();
             }
             else
@@ -75,22 +49,13 @@ namespace QuotesManagement.Persistence.Repositories
         }
         private async Task CleanupUnusedTagsAsync()
         {
-            // Find all tags that are no longer associated with any quotes
-            var unusedTags = await _context.Tags
-                .Where(tag => !_context.QuotesTags.Any(qt => qt.TagId == tag.TagId))
-                .ToListAsync();
-
+            var unusedTags = await _context.Tags.Where(tag => !_context.QuotesTags.Any(qt => qt.TagId == tag.TagId)).ToListAsync();
             if (unusedTags.Any())
             {
-                // Remove the unused tags
                 _context.Tags.RemoveRange(unusedTags);
                 await _context.SaveChangesAsync();
             }
         }
-
-
-
-
         public async Task<IEnumerable<Quote>> SearchQuotesAsync(string author, List<string> tags, string quote)
         {
             var query = _context.Quotes.AsQueryable();
@@ -119,24 +84,10 @@ namespace QuotesManagement.Persistence.Repositories
             var result = await query.Include(q => q.QuoteTags).ThenInclude(qt => qt.Tags).ToListAsync();
             return result;
         }
-
         public async Task<List<string>> GetAllTagNamesAsync()
         {
             return await _context.Tags.Select(t => t.TagName).ToListAsync();
         }
-
-        //public async Task<Tags> AddTagAsync(string tagName)
-        //{
-        //    var existingTag = await _context.Tags.FirstOrDefaultAsync(t => string.Equals(t.TagName, tagName, StringComparison.OrdinalIgnoreCase));
-        //    if (existingTag == null)
-        //    {
-        //        var newTag = new Tags { TagName = tagName };
-        //        _context.Tags.Add(newTag);
-        //        await _context.SaveChangesAsync();
-        //        return newTag;
-        //    }
-        //    return existingTag;
-        //}
         public async Task<Tags> AddTagAsync(string tagName)
         {
             var existingTag = await _context.Tags.FirstOrDefaultAsync(t => t.TagName.ToLower() == tagName.ToLower());
@@ -149,8 +100,6 @@ namespace QuotesManagement.Persistence.Repositories
             }
             return existingTag;
         }
-
-
         public async Task<IEnumerable<Tags>> GetAllTagsAsync()
         {
             return await _context.Tags.ToListAsync();
