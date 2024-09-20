@@ -94,5 +94,18 @@ namespace QuotesManagementUI.QuotesServices
                 throw new Exception("Failed to search quotes", ex);
             }
         }
+
+        public async Task<List<string>> GetAllTagNames()
+        {
+            try
+            {
+                var tags = await _httpClient.GetFromJsonAsync<List<string>>("/api/Quotes/tagNames");
+                return tags;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception("Failed to retrieve quotes", ex);
+            }
+        }
     }
 }

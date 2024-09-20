@@ -23,7 +23,7 @@ namespace QuotesManagement.Persistence.Services
             {
                 Id = t.Id,
                 Author = t.Author,
-                Tags = t.Tags.Split(',').ToList(),
+                Tags = t.QuoteTags.Select(qt => qt.Tags.TagName).ToList(),
                 Quote = t.QuoteText
             });
         }
@@ -38,25 +38,25 @@ namespace QuotesManagement.Persistence.Services
             {
                 Id = quote.Id,
                 Author = quote.Author,
-                Tags = quote.Tags.Split(',').ToList(),
+                Tags = quote.QuoteTags.Select(qt => qt.Tags.TagName).ToList(),
                 Quote = quote.QuoteText
             };
         }
 
         public async Task AddQuotesAsync(IEnumerable<CreateQuoteDTO> quotes)
         {
-            foreach (var quote in quotes)
+            foreach (var quoteDto in quotes)
             {
-                var quoteItem = new Quote
+                var quote = new Quote
                 {
-                    Author = quote.Author,
-                    Tags = string.Join(",", quote.Tags.Where(tag => !string.IsNullOrEmpty(tag))),
-                    QuoteText = quote.Quote
+                    Author = quoteDto.Author,
+                    QuoteText = quoteDto.Quote,
+                    QuoteTags = new List<QuoteTags>()
                 };
-                await _quoteRepository.AddQuotesAsync(quoteItem);
+                await ProcessTagsForQuoteAsync(quote, quoteDto.Tags);
+                await _quoteRepository.AddQuotesAsync(quote);
             }
         }
-
         public async Task UpdateQuoteAsync(UpdateQuoteDTO quote)
         {
             var existingQuote = await _quoteRepository.GetQuoteByIdAsync(quote.Id);
@@ -64,12 +64,12 @@ namespace QuotesManagement.Persistence.Services
                 return;
 
             existingQuote.Author = quote.Author;
-            existingQuote.Tags = string.Join(",", quote.Tags.Where(tag => !string.IsNullOrEmpty(tag)));
-
             existingQuote.QuoteText = quote.Quote;
 
+            await ProcessTagsForQuoteAsync(existingQuote, quote.Tags);
             await _quoteRepository.UpdateQuoteAsync(existingQuote);
         }
+
 
         public async Task DeleteQuoteAsync(int id)
         {
@@ -83,9 +83,42 @@ namespace QuotesManagement.Persistence.Services
             {
                 Id = t.Id,
                 Author = t.Author,
-                Tags = t.Tags.Split(',').ToList(),
+                Tags = t.QuoteTags.Select(qt => qt.Tags.TagName).ToList(),
                 Quote = t.QuoteText
             });
+        }
+
+        public async Task<List<string>> GetAllTagNamesAsync()
+        {
+            var tags = await _quoteRepository.GetAllTagNamesAsync();
+            return tags;
+        }
+
+        private async Task ProcessTagsForQuoteAsync(Quote quote, List<string> tagNames)
+        {
+            var distinctTags = tagNames.Where(tag => !string.IsNullOrWhiteSpace(tag)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+            var existingTags = await _quoteRepository.GetAllTagsAsync();
+            quote.QuoteTags.Clear();
+            foreach (var tagName in distinctTags)
+            {
+                var existingTag = existingTags.FirstOrDefault(t => string.Equals(t.TagName, tagName, StringComparison.OrdinalIgnoreCase));
+                if (existingTag == null)
+                {
+                    var newTag = await _quoteRepository.AddTagAsync(tagName);
+                    quote.QuoteTags.Add(new QuoteTags { TagId = newTag.TagId });
+                }
+                else
+                {
+                    quote.QuoteTags.Add(new QuoteTags { TagId = existingTag.TagId });
+                }
+            }
+        }
+
+        public async Task<IEnumerable<Tags>> GetAllTagsAsync()
+        {
+            var tags = await _quoteRepository.GetAllTagsAsync();
+            return tags;
         }
 
     }

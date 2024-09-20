@@ -16,5 +16,8 @@ namespace QuotesManagement.Domain.Repositories
         Task UpdateQuoteAsync(Quote quote);
         Task DeleteQuoteAsync(int id);
         Task<IEnumerable<Quote>> SearchQuotesAsync(string author, List<string> tags, string quote);
+        Task<List<string>> GetAllTagNamesAsync();
+        Task<Tags> AddTagAsync(string tagName);
+        Task<IEnumerable<Tags>> GetAllTagsAsync();
     }
 }

@@ -13,7 +13,7 @@ namespace QuotesManagement.Domain.Entity
         [Required]
         public string QuoteText { get; set; }
 
-        public string Tags { get; set; }
+        public ICollection<QuoteTags> QuoteTags { get; set; } = new List<QuoteTags>();
     }
 
 }

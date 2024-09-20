@@ -147,6 +147,20 @@ namespace QuotesManagement.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet("tagNames")]
+        public async Task<ActionResult<List<string>>> GetAllTagNames()
+        {
+            try
+            {
+                var tagNames = await _quoteService.GetAllTagNamesAsync();
+                return Ok(tagNames);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 
 }

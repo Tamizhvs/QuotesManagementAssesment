@@ -1,6 +1,9 @@
 ﻿@page "/"
+
 @using QuotesManagementUI.ResultSet
+
 @using QuotesManagementUI.QuotesServices
+
 @inject IQuotesApiService QuotesApiService
 
 <MudContainer Class="mt-4">
@@ -14,7 +17,17 @@
             <MudTextField Label="Search by Author" @bind-Value="searchAuthor" Variant="Variant.Outlined" FullWidth="true" />
         </MudItem>
         <MudItem xs="12" md="4">
-            <MudTextField Label="Search by Tags (comma-separated)" @bind-Value="searchTags" Variant="Variant.Outlined" FullWidth="true" />
+            <MudSelect T="string" Label="Search by Tags" MultiSelection="true"
+                       @bind-Value="selectedTagLabel" @bind-SelectedValues="selectedTags" Variant="Variant.Outlined" FullWidth="true">
+
+                @foreach (var tag in allTags)
+
+                {
+                    <MudSelectItem T="string" Value="@tag">@tag</MudSelectItem>
+
+                }
+            </MudSelect>
+
         </MudItem>
         <MudItem xs="12" md="4">
             <MudTextField Label="Search by Quote Content" @bind-Value="searchQuote" Variant="Variant.Outlined" FullWidth="true" />
@@ -22,19 +35,41 @@
     </MudGrid>
 
     <MudGrid>
+
         <MudItem>
-                <div class="mb-4">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchQuotes">Search</MudButton>
-                    <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="ResetSearch" Class="ml-2">Reset</MudButton>
-                </div>
+            <div class="mb-4">
+
+                @if (selectedTags.Any())
+
+                {
+                    <MudChipSet T="string" Class="my-chipset">
+
+                        @foreach (var tag in selectedTags)
+
+                        {
+                            <MudChip Color="Color.Primary" CloseIcon="true" Size="Size.Small" OnClick="@(() => RemoveTag(tag))">@tag</MudChip>
+
+                        }
+                    </MudChipSet>
+
+                }
+            </div>
+            <div class="mb-4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchQuotes">Search</MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="ResetSearch" Class="ml-2">Reset</MudButton>
+            </div>
         </MudItem>
     </MudGrid>
 
     @if (quotes == null)
+
     {
         <MudText Typo="Typo.body1" Class="mt-2"><em>Loading...!</em></MudText>
+
     }
+
     else
+
     {
         <MudTable Items="quotes" AllowUnsorted="true" Hover="true" Striped="true" Bordered="true" SortLabel="Sort By">
             <HeaderContent>
@@ -50,9 +85,12 @@
                     <MudTd DataLabel="Quote">@context.Quote</MudTd>
                     <MudTd DataLabel="Tags">
                         <MudChipSet T="string" Class="my-chipset">
+
                             @foreach (var tag in @context.Tags)
+
                         {
                             <MudChip Color="Color.Primary" Size="Size.Small">@tag</MudChip>
+
                         }
                     </MudChipSet>
                 </MudTd>
@@ -65,18 +103,23 @@
                 <MudTablePager PageSizeOptions="new int[] { 5, 10, 25 }" />
             </PagerContent>
         </MudTable>
+
     }
 </MudContainer>
 
 @code {
+
     private List<QuoteResult> quotes = new();
     private string searchAuthor = string.Empty;
-    private string searchTags = string.Empty;
+    private string selectedTagLabel { get; set; } = "No tags selected";
+    private IEnumerable<string> selectedTags { get; set; } = new HashSet<string>();
+    private List<string> allTags = new List<string>();
     private string searchQuote = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadAllQuotes();
+        await LoadAllTags();
     }
 
     private async Task LoadAllQuotes()
@@ -84,17 +127,29 @@
         quotes = (await QuotesApiService.GetAllQuotes()).ToList();
     }
 
+    private async Task LoadAllTags()
+    {
+        allTags = await QuotesApiService.GetAllTagNames();
+    }
+
     private async Task SearchQuotes()
     {
-        var tagList = searchTags.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToList();
+        var tagList = selectedTags.ToList();
         quotes = (await QuotesApiService.SearchQuotes(searchAuthor, tagList, searchQuote)).ToList();
+    }
+
+    private void RemoveTag(string tag)
+    {
+        selectedTags = selectedTags.Where(t => t != tag).ToList();
     }
 
     private async Task ResetSearch()
     {
         searchAuthor = string.Empty;
-        searchTags = string.Empty;
+        selectedTags = new HashSet<string>();
         searchQuote = string.Empty;
         await LoadAllQuotes();
     }
+
 }
+
